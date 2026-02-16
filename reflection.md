@@ -29,9 +29,15 @@ Added TaskCategory enum and ScheduledTask/DailyPlan classes to structure the sch
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
+
+The scheduler uses a greedy algorithm rather than finding the globally optimal schedule. This means it might not find the absolute best arrangement of tasks.
+
 - Why is that tradeoff reasonable for this scenario?
 
----
+This tradeoff is reasonable because:
+ Speed The greedy approach runs in O(n log n) time, making it fast even with many tasks
+Simplicity The algorithm is easy to understand, debug, and explain to users
+Predictability: Users can understand why tasks are ordered (by priority) without complex logic
 
 ## 3. AI Collaboration
 
