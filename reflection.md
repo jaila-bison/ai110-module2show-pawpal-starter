@@ -5,7 +5,10 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+     
+- What classes did you include, and what 
+responsibilities did you assign to each?
+    My design contains classes for user, pet, tasks daily plan, scheduled tasks, plan, priority level, and task status.
 
 **b. Design changes**
 
