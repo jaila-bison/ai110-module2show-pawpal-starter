@@ -5,15 +5,17 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
-     
+     This UML class diagram shows a pet management and scheduling system. At the start is the Owner, who manages multiple Pets and has a specific amount of available time. Each Pet is associated with a list of Tasks, which are defined as data classes containing details like description, duration, priority, and completion status. . A Scheduler class acts as a coordinator, holding a reference to an Owner to "schedule for" them; it also has a dependency on Tasks, as it "optimizes" them by calculating total durations and filtering activities based on the owner's available time and task priority.
 - What classes did you include, and what 
 responsibilities did you assign to each?
-    My design contains classes for user, pet, tasks daily plan, scheduled tasks, plan, priority level, and task status.
+    For the initial design, I chose four main classes: Pet, Task, Owner, and Scheduler. The Pet and Task classes (using Python Dataclasses) act as the primary data models, storing essential information like care requirements, priorities, and durations. The Owner class serves as the central hub that manages multiple pet profiles, while the Scheduler acts as the logic engine that processes the owner's available time and task priorities to generate an optimized daily plan
+
 
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+Added TaskCategory enum and ScheduledTask/DailyPlan classes to structure the scheduler output with actual time slots. Enhanced Task with pet back-references (pet_name), dependencies, completion timestamps, and validation. Implemented complete Scheduler algorithm that sorts by priority, respects dependencies, fits tasks within available time, and returns a structured plan with skipped tasks. Added helper methods across all classes for filtering overdue/pending tasks and preventing data integrity issues.
 
 ---
 
