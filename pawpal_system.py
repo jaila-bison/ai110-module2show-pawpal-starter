@@ -117,6 +117,38 @@ class Task:
         """Check if this task is recurring."""
         return self.recurrence != RecurrenceType.NONE
 
+    def occurrences_between(self, start: datetime, end: datetime) -> List[datetime]:
+        """
+        Get every due time of this task that falls in [start, end).
+
+        A pending recurring task repeats from its due_time using the same
+        intervals as generate_next_occurrence(). A completed task only occurs
+        once, because completing it already created the next occurrence as
+        its own task.
+        """
+        step = {
+            RecurrenceType.DAILY: timedelta(days=1),
+            RecurrenceType.WEEKLY: timedelta(weeks=1),
+            RecurrenceType.MONTHLY: timedelta(days=30),
+        }.get(self.recurrence)
+
+        if step is None or self.is_completed:
+            return [self.due_time] if start <= self.due_time < end else []
+
+        current = self.due_time
+        if current < start:
+            # Jump straight to the first occurrence on or after start
+            skipped = -(-(start - current) // step)
+            current += skipped * step
+
+        occurrences = []
+        while current < end:
+            if self.recurrence_end_date and current > self.recurrence_end_date:
+                break
+            occurrences.append(current)
+            current += step
+        return occurrences
+
 
 @dataclass
 class ScheduledTask:
@@ -144,6 +176,18 @@ class Pet:
         """Add a task to this pet's task list."""
         task.pet_name = self.name  # Set back-reference
         self.tasks.append(task)
+
+    def remove_task(self, task: Task) -> bool:
+        """
+        Remove this exact task object from the pet's task list.
+        Matches by identity, so an identical-looking duplicate is kept.
+        Returns True if the task was found and removed.
+        """
+        for i, existing in enumerate(self.tasks):
+            if existing is task:
+                del self.tasks[i]
+                return True
+        return False
 
     def get_pending_tasks(self) -> List[Task]:
         """Get all tasks that are not yet completed."""

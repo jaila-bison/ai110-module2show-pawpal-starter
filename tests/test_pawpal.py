@@ -168,3 +168,64 @@ class TestTaskAddition:
         assert task in pet.tasks
         assert pet.tasks[0] == task
         assert pet.tasks[0].description == "Give Luna medication"
+
+
+class TestRemoveTask:
+    """Test suite for deleting tasks from a pet."""
+
+    def test_remove_task_takes_it_out_of_list(self):
+        pet = Pet(name="Buddy", species="dog")
+        task = Task("Walk", 30, 1, datetime(2026, 9, 24, 9, 0))
+        pet.add_task(task)
+
+        assert pet.remove_task(task) is True
+        assert pet.tasks == []
+
+    def test_remove_task_keeps_identical_duplicate(self):
+        """Two tasks with the same details are separate; only the chosen one goes."""
+        pet = Pet(name="Buddy", species="dog")
+        first = Task("Walk", 30, 1, datetime(2026, 9, 24, 9, 0))
+        second = Task("Walk", 30, 1, datetime(2026, 9, 24, 9, 0))
+        pet.add_task(first)
+        pet.add_task(second)
+
+        pet.remove_task(second)
+
+        assert len(pet.tasks) == 1
+        assert pet.tasks[0] is first
+
+    def test_remove_missing_task_returns_false(self):
+        pet = Pet(name="Buddy", species="dog")
+        assert pet.remove_task(Task("Walk", 30, 1, datetime(2026, 9, 24, 9, 0))) is False
+
+
+class TestOccurrencesBetween:
+    """Test suite for projecting tasks onto calendar ranges."""
+
+    def test_one_time_task_inside_and_outside_range(self):
+        task = Task("Vet visit", 60, 1, datetime(2026, 9, 24, 14, 0))
+        assert task.occurrences_between(datetime(2026, 9, 24), datetime(2026, 9, 25)) == [datetime(2026, 9, 24, 14, 0)]
+        assert task.occurrences_between(datetime(2026, 9, 25), datetime(2026, 9, 26)) == []
+
+    def test_daily_task_repeats_each_day_in_range(self):
+        from pawpal_system import RecurrenceType
+        task = Task("Feed", 10, 1, datetime(2026, 9, 20, 8, 0), recurrence=RecurrenceType.DAILY)
+        result = task.occurrences_between(datetime(2026, 9, 22), datetime(2026, 9, 25))
+        assert result == [datetime(2026, 9, d, 8, 0) for d in (22, 23, 24)]
+
+    def test_weekly_task_stops_at_end_date(self):
+        from pawpal_system import RecurrenceType
+        task = Task(
+            "Bath", 30, 2, datetime(2026, 9, 1, 10, 0),
+            recurrence=RecurrenceType.WEEKLY, recurrence_end_date=datetime(2026, 9, 15, 10, 0),
+        )
+        result = task.occurrences_between(datetime(2026, 9, 1), datetime(2026, 10, 1))
+        assert result == [datetime(2026, 9, 1, 10, 0), datetime(2026, 9, 8, 10, 0), datetime(2026, 9, 15, 10, 0)]
+
+    def test_completed_recurring_task_only_shows_once(self):
+        """Completing it already created the next occurrence as its own task."""
+        from pawpal_system import RecurrenceType
+        task = Task("Feed", 10, 1, datetime(2026, 9, 20, 8, 0), recurrence=RecurrenceType.DAILY)
+        task.mark_complete()
+        result = task.occurrences_between(datetime(2026, 9, 1), datetime(2026, 10, 1))
+        assert result == [datetime(2026, 9, 20, 8, 0)]
